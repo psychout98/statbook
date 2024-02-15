@@ -1,6 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, Image, Modal, TouchableHighlight, Button } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import Axios from 'axios';
+import { StyleSheet, Text, View, TouchableHighlight } from 'react-native'
 
 
 
@@ -14,15 +12,7 @@ export default function Menubar({ teamname, setLogin, setMenuOpen, setModule }) 
                 </View>
                 <View style={styles.button}>
                     <TouchableHighlight onPress={() => {
-                        setModule(0)
-                        setMenuOpen(false)
-                    }}>
-                        <Text style={styles.text}>Stats</Text>
-                    </TouchableHighlight>
-                </View>
-                <View style={styles.button}>
-                    <TouchableHighlight onPress={() => {
-                        setModule(1)
+                        setModule('Players')
                         setMenuOpen(false)
                     }}>
                         <Text style={styles.text}>Players</Text>
@@ -30,7 +20,7 @@ export default function Menubar({ teamname, setLogin, setMenuOpen, setModule }) 
                 </View>
                 <View style={styles.button}>
                     <TouchableHighlight onPress={() => {
-                        setModule(3)
+                        setModule('Games')
                         setMenuOpen(false)
                     }}>
                         <Text style={styles.text}>Games</Text>

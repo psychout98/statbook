@@ -1,9 +1,8 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, Image, Modal, TouchableHighlight, Button } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import Axios from 'axios';
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 
 
 export default function Currentgame({ history }) {
+    
     return (
         <SafeAreaView style={styles.container}>
             <FlatList data={history}
