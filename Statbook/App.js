@@ -40,6 +40,15 @@ export default function App() {
     }
   }, [currentGame])
 
+  useEffect(() => {
+    if (module !== 'Stats') {
+      setCurrentPlayer(null)
+    }
+    if (module !== '') {
+      setCurrentGame(null)
+    }
+  }, [module])
+
   function handleLogin() {
     axios({
       method: "POST",

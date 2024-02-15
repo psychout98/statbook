@@ -37,7 +37,7 @@ export default function Games({ teamid, games, selectGame, addGame }) {
             <TouchableHighlight style={{ position: 'absolute', top: -45, right: 10 }} onPress={() => setAddingGame(true)}>
                 <Ionicons name="add" size={40} color='#FFFFFF' />
             </TouchableHighlight>
-            {games.length === 0 ? <Text style={styles.title}>Click + to create a game</Text> : null}
+            {games?.length === 0 ? <Text style={styles.title}>Click + to create a game</Text> : null}
             <FlatList data={games}
                 keyExtractor={(item) => item._id}
                 renderItem={({ item }) => (
