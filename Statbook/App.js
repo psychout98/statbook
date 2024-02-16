@@ -21,13 +21,14 @@ axios.defaults.baseURL = 'http://statbook-server-cde0e4e8f06d.herokuapp.com'
  */
 export default function App() {
 
-  const [teamname, onChangeTeamname] = useState()
+  const [teamname, onChangeTeamname] = useState('')
   const [login, setLogin] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [module, setModule] = useState('Games')
   const [currentGame, setCurrentGame] = useState(null)
   const [teamData, setTeamData] = useState(null)
   const [currentPlayer, setCurrentPlayer] = useState(null)
+  const [printLoginFail, setPrintLoginFail] = useState(false)
 
   useEffect(() => {
     if (currentGame) {
@@ -50,18 +51,22 @@ export default function App() {
   }, [module])
 
   function handleLogin() {
-    axios({
-      method: "POST",
-      url: "/team",
-      params: {
-        teamname: teamname
-      }
-    }).then((result) => {
-      setTeamData(result.data)
-      setLogin(true)
-    }).catch((error) => {
-      console.log(error)
-    })
+    if (teamname.length > 0) {
+      axios({
+        method: "POST",
+        url: "/team",
+        params: {
+          teamname: teamname
+        }
+      }).then((result) => {
+        setTeamData(result.data)
+        setLogin(true)
+      }).catch((error) => {
+        console.log(error)
+      })
+    } else {
+      setPrintLoginFail(true)
+    }
   }
 
   function selectGame(game) {
@@ -145,6 +150,7 @@ export default function App() {
       <View style={styles.container}>
         <Text style={styles.title}>Volleyball Stat Tracker</Text>
         <TextInput style={styles.textBox} onChangeText={onChangeTeamname} placeholder='enter team name' />
+        {printLoginFail ? <Text style={{ color: "#ff0000" }}>Please enter a valid team name</Text> : null}
         <Button onPress={handleLogin} title="log in" />
       </View>
     </SafeAreaView>

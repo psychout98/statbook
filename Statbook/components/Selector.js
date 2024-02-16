@@ -188,7 +188,7 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
                 </TouchableHighlight>
             </View>
             <Currentgame history={currentGame.history.map(item => {
-                return `${players.find(player => player._id === item.playerid).name} ${playCodes[item.play1].title}`
+                return `${players.find(player => player._id === item.playerid)?.name} ${playCodes[item.play1].title}`
             })} />
             <Modal isVisible={openSettings} onBackdropPress={() => setOpenSettings(false)} backdropOpacity={0} style={{ alignItems: 'center' }}>
                 <View style={styles.modalView}>
