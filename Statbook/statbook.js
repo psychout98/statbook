@@ -164,3 +164,24 @@ export const baseStats = {
     'stdmp': 0,
     'sterr': 0
 }
+export const excelStats = {
+    'Player': '',
+    'Service Aces': 0,
+    'Service Attempts': 0,
+    'Service Errors': 0,
+    'Serve Receive Digs': 0,
+    'Serve Receive Attempts': 0,
+    'Serve Receive Errors': 0,
+    'Defense Digs': 0,
+    'Defense Attempts': 0,
+    'Defense Errors': 0,
+    'Kills': 0,
+    'Spike Attempts': 0,
+    'Spike Errors': 0,
+    'Blocks': 0,
+    'Block Touches': 0,
+    'Block Errors': 0,
+    'Set Assists': 0,
+    'Dumps': 0,
+    'Set Errors': 0
+}

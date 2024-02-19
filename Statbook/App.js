@@ -9,7 +9,7 @@ import Games from './components/Games';
 import Players from './components/Players';
 import Stats from './components/Stats';
 
-axios.defaults.baseURL = 'http://statbook-server-cde0e4e8f06d.herokuapp.com'
+axios.defaults.baseURL = 'https://statbook-server-cde0e4e8f06d.herokuapp.com'
 
 /**
  * Color pallette
@@ -42,9 +42,7 @@ export default function App() {
   }, [currentGame])
 
   useEffect(() => {
-    if (module !== 'Stats') {
-      setCurrentPlayer(null)
-    }
+    setCurrentPlayer(null)
     if (module !== '') {
       setCurrentGame(null)
     }
@@ -134,8 +132,8 @@ export default function App() {
         </TouchableHighlight>
       </View>
       {
-        module === 'Stats' && currentPlayer !== null ?
-          <Stats teamData={teamData} currentPlayer={currentPlayer} /> :
+        module === 'Stats' ?
+          <Stats teamname={teamname} teamData={teamData} players={currentPlayer ? [currentPlayer._id] : teamData.players.map(player => player._id) } /> :
           module === 'Players' ?
             <Players teamid={teamData._id} players={teamData.players} handleNewPlayer={handleNewPlayer} editPlayer={editPlayer} deletePlayer={deletePlayer} selectPlayer={selectPlayer} /> :
             module === '' && currentGame ?

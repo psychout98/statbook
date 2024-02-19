@@ -1,16 +1,21 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, Image, TouchableHighlight, Button } from 'react-native'
+import { FlatList, SafeAreaView, StyleSheet, Text, View, TouchableHighlight } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
-import { baseStats, statCodes } from '../statbook';
+import { baseStats, statCodes, excelStats } from '../statbook';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal'
+import { utils, write } from 'xlsx';
+import * as FileSystem from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
 
 
-export default function Stats({ teamData, currentPlayer }) {
+export default function Stats({ teamname, teamData, players }) {
 
     const [currentStats, setCurrentStats] = useState(statCodes)
     const [openSettings, setOpenSettings] = useState(false)
     const [games, setGames] = useState(teamData.games.map(game => game._id))
+    const [rawStats, setRawStats] = useState([])
+    const [totals, setTotals] = useState(null)
 
     useEffect(() => {
         if (games.length > 0) {
@@ -19,12 +24,20 @@ export default function Stats({ teamData, currentPlayer }) {
                 url: "/stats",
                 data: {
                     games: games,
-                    players: [currentPlayer._id]
+                    players: players
                 }
             }).then((result) => {
-                const playerStats = result.data.find(stat => stat.playerid === currentPlayer._id)
-                if (playerStats) {
-                    setCurrentStats(buildStatList(playerStats))
+                setRawStats(result.data)
+                if (result.data.length > 0) {
+                    const tempTotals = result.data.reduce((a, b) => {
+                        Object.keys(baseStats).forEach(stat => {
+                            a[stat] += b[stat]
+                        })
+                        return a
+                    }, { ...baseStats })
+                    setCurrentStats(buildStatList(tempTotals))
+                    tempTotals.playerid = 'Total'
+                    setTotals(tempTotals)
                 } else {
                     setCurrentStats(buildStatList(baseStats))
                 }
@@ -34,7 +47,7 @@ export default function Stats({ teamData, currentPlayer }) {
         } else {
             setCurrentStats(buildStatList(baseStats))
         }
-    }, [games])
+    }, [games, players])
 
     function buildStatList(stats) {
         return Object.keys(statCodes).map(code => {
@@ -53,10 +66,46 @@ export default function Stats({ teamData, currentPlayer }) {
         }
     }
 
+    function toPrettyJSON(playerStats) {
+        const base = { ...excelStats }
+        base.Player = playerStats.playerid
+        Object.keys(baseStats).forEach(code => {
+            base[statCodes[code]] = playerStats[code]
+        })
+        return base
+    }
+
+    async function onShare() {
+        const prettyStats = rawStats.map(playerStats => {
+            playerStats.playerid = teamData.players.find(player => player._id === playerStats.playerid)?.name
+            return toPrettyJSON(playerStats)
+        })
+        prettyStats.push(toPrettyJSON(totals))
+        var ws = utils.json_to_sheet(prettyStats)
+        var wb = utils.book_new()
+        utils.book_append_sheet(wb, ws, "Stats")
+        const wbout = write(wb, {
+            type: 'base64',
+            bookType: "xlsx"
+        })
+        const url = FileSystem.cacheDirectory + `${teamname} Stats.xlsx`
+        await FileSystem.writeAsStringAsync(url, wbout, {
+            encoding: FileSystem.EncodingType.Base64
+        })
+        await Sharing.shareAsync(url, {
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            dialogTitle: `${teamname} Stats`,
+            UTI: 'com.microsoft.excel.xlsx'
+          })
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <TouchableHighlight style={{ position: 'absolute', top: -40, right: 15 }} onPress={() => setOpenSettings(true)}>
                 <Ionicons name="settings-sharp" size={30} color='#FFFFFF' />
+            </TouchableHighlight>
+            <TouchableHighlight style={{ position: 'absolute', top: -40, right: 55 }} onPress={onShare}>
+                <Ionicons name="share-outline" size={30} color='#FFFFFF' />
             </TouchableHighlight>
             <View style={styles.statList}>
                 <FlatList data={currentStats}

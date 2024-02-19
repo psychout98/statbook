@@ -16,7 +16,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.psychout98.Statbook"
+      "bundleIdentifier": "com.psychout98.Statbook",
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {

@@ -28,8 +28,17 @@ export default function Menubar({ teamname, setLogin, setMenuOpen, setModule }) 
                 </View>
                 <View style={styles.button}>
                     <TouchableHighlight onPress={() => {
+                        setModule('Stats')
+                        setMenuOpen(false)
+                    }}>
+                        <Text style={styles.text}>Stats</Text>
+                    </TouchableHighlight>
+                </View>
+                <View style={styles.button}>
+                    <TouchableHighlight onPress={() => {
                         setLogin(false)
                         setMenuOpen(false)
+                        setModule('Games')
                     }}>
                         <Text style={styles.text}>Log out</Text>
                     </TouchableHighlight>
