@@ -42,7 +42,6 @@ export default function App() {
   }, [currentGame])
 
   useEffect(() => {
-    setCurrentPlayer(null)
     if (module !== '') {
       setCurrentGame(null)
     }
@@ -118,8 +117,13 @@ export default function App() {
   }
 
   function selectPlayer(player) {
-    setCurrentPlayer(player)
     setModule('Stats')
+    setCurrentPlayer(player)
+  }
+
+  function openTeamStats() {
+    setModule('Stats')
+    setCurrentPlayer(null)
   }
 
   return (login && teamData ?
@@ -141,7 +145,7 @@ export default function App() {
               <Games teamid={teamData._id} games={teamData.games} selectGame={selectGame} addGame={addGame} />
       }
       <Modal isVisible={menuOpen} animationIn='slideInLeft' animationOut='slideOutLeft' onBackdropPress={() => setMenuOpen(false)} backdropOpacity={0} style={{ margin: 0 }}>
-        <Menubar teamname={teamname} setLogin={setLogin} setMenuOpen={setMenuOpen} setModule={setModule} />
+        <Menubar teamname={teamname} setLogin={setLogin} setMenuOpen={setMenuOpen} setModule={setModule} openTeamStats={openTeamStats} />
       </Modal>
     </SafeAreaView> :
     <SafeAreaView style={styles.screen}>
