@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal'
+import * as SecureStore from 'expo-secure-store';
 
 
-export default function Players({ teamid, players, handleNewPlayer, editPlayer, deletePlayer, selectPlayer }) {
+export default function Players({ editor, teamid, players, handleNewPlayer, editPlayer, deletePlayer, selectPlayer }) {
 
     const [addingPlayer, setAddingPlayer] = useState(false)
     const [name, onChangeName] = useState('')
@@ -20,11 +21,15 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
         }
     }, [currentPlayer])
 
-    function handleAddPlayer() {
+    async function handleAddPlayer() {
         if (name.length > 0) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "POST",
-                url: "/player",
+                url: "/app/player",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
                 params: {
                     teamid: teamid,
                     playername: name
@@ -42,11 +47,15 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
         }
     }
 
-    function handleEditPlayer() {
+    async function handleEditPlayer() {
         if (name !== currentPlayer.name && name.length > 0) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "PUT",
-                url: "/player",
+                url: "/app/player",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
                 params: {
                     playerid: currentPlayer._id,
                     name: name
@@ -62,11 +71,15 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
         }
     }
 
-    function handleDeletePlayer() {
+    async function handleDeletePlayer() {
         if (deleting) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "DELETE",
-                url: "/player",
+                url: "/app/player",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
                 params: {
                     playerid: currentPlayer._id
                 }
@@ -83,9 +96,9 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
 
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableHighlight style={{ position: 'absolute', top: -45, right: 10 }} onPress={() => setAddingPlayer(true)}>
+            {editor ? <TouchableHighlight style={{ position: 'absolute', top: -45, right: 10 }} onPress={() => setAddingPlayer(true)}>
                 <Ionicons name="add" size={40} color='#FFFFFF' />
-            </TouchableHighlight>
+            </TouchableHighlight> : null}
             {players.length === 0 ? <Text style={styles.title}>Click + to create a player</Text> : null}
             <FlatList data={players}
                 keyExtractor={(item) => item._id}
@@ -111,8 +124,8 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
                 </View>
             </Modal>
             <Modal isVisible={currentPlayer !== null} onBackdropPress={() => setCurrentPlayer(null)} backdropOpacity={0} style={{ alignItems: 'center' }}>
-                {editMenu ?
-                    <View style={{ ...styles.modalView, maxHeight: '35%' }}>
+                {editMenu && editor ?
+                    <View style={{ ...styles.modalView }}>
                         <Text style={styles.title}>Edit player</Text>
                         <TextInput style={styles.textBox} onChangeText={onChangeName} defaultValue={name} />
                         <TouchableHighlight onPress={handleEditPlayer}>
@@ -122,11 +135,11 @@ export default function Players({ teamid, players, handleNewPlayer, editPlayer, 
                             <Text style={styles.delete}>{deleting ? 'Confirm delete' : 'Delete player'}</Text>
                         </TouchableHighlight>
                     </View> :
-                    <View style={{ ...styles.modalView, maxHeight: '35%', justifyContent: 'center', gap: 30 }}>
+                    <View style={{ ...styles.modalView, justifyContent: 'center', gap: 30 }}>
                         <Text style={styles.title}>{currentPlayer?.name}</Text>
-                        <TouchableHighlight onPress={() => setEditMenu(true)}>
+                        {editor ? <TouchableHighlight onPress={() => setEditMenu(true)}>
                             <Text style={styles.title}>Edit player</Text>
-                        </TouchableHighlight>
+                        </TouchableHighlight> : null}
                         <TouchableHighlight onPress={() => selectPlayer(currentPlayer)}>
                             <Text style={styles.title}>View stats</Text>
                         </TouchableHighlight>
@@ -169,9 +182,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#2a475e',
         borderRadius: 20,
-        maxHeight: '25%',
-        maxWidth: '80%',
-        minWidth: '80%',
+        maxHeight: 200,
+        maxWidth: 300,
+        minWidth: 300,
         alignItems: 'center',
         padding: 20
     },

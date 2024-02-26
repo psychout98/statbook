@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, TouchableHighlight, TextInput } from 'react-native'
+import { FlatList, SafeAreaView, StyleSheet, Text, View, TouchableHighlight, TextInput, Dimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -6,6 +6,9 @@ import Currentgame from './Currentgame';
 import { plays, playCodes } from '../statbook';
 import Modal from 'react-native-modal'
 import SelectDropdown from 'react-native-select-dropdown';
+import * as SecureStore from 'expo-secure-store';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 export default function Selector({ currentGame, setCurrentGame, players, deleteGame }) {
 
@@ -22,31 +25,39 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
 
     }, [currentGame])
 
-    function handlePlay(code) {
+    async function handlePlay(code, playerid) {
+        setCurrentCategory(null)
+        setUndos([])
+        const token = await SecureStore.getItemAsync("token")
         axios({
             method: "PUT",
-            url: "/play",
+            url: "/app/play",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
             params: {
-                playerid: currentPlayer._id,
+                playerid,
                 gameid: currentGame._id,
                 play1: code,
                 play2: playCodes[code].play2
             }
         }).then((result) => {
             setCurrentGame(result.data)
-            setUndos([])
-            setCurrentCategory(null)
         }).catch((error) => {
             console.log(error)
         })
     }
 
-    function handleUndo() {
+    async function handleUndo() {
         if (currentGame.history.length > 0) {
             const lastPlay = currentGame.history.pop()
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "PUT",
-                url: "/undo",
+                url: "/app/undo",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
                 params: {
                     gameid: currentGame._id
                 },
@@ -62,12 +73,16 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
         }
     }
 
-    function handleRedo() {
+    async function handleRedo() {
         if (undos.length > 0) {
             const lastUndo = undos.pop()
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "PUT",
-                url: "/redo",
+                url: "/app/redo",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
                 params: {
                     gameid: currentGame._id
                 },
@@ -83,11 +98,15 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
         }
     }
 
-    function handleEditGame() {
+    async function handleEditGame() {
         if (opponent !== currentGame.opponent || game !== currentGame.game || set !== currentGame.set) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "PUT",
-                url: "/game",
+                url: "/app/game",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
                 params: {
                     gameid: currentGame._id,
                     opponent: opponent,
@@ -110,11 +129,15 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
         }
     }
 
-    function handleDeleteGame() {
+    async function handleDeleteGame() {
         if (deleting) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "DELETE",
-                url: "/game",
+                url: "/app/game",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
                 params: {
                     gameid: currentGame._id
                 }
@@ -156,9 +179,9 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
                 {currentCategory ?
                     plays[currentCategory].map((play, i) => {
                         return (
-                            <TouchableHighlight key={i} onPress={() => handlePlay(play.code)}>
+                            <TouchableHighlight key={i} onPress={() => handlePlay(play.code, currentPlayer._id)}>
                                 <View style={styles.button}>
-                                    <Text>
+                                    <Text style={styles.buttonText}>
                                         {play.short}
                                     </Text>
                                 </View>
@@ -170,12 +193,16 @@ export default function Selector({ currentGame, setCurrentGame, players, deleteG
                         return (
                             <TouchableHighlight key={i} onPress={() => { setCurrentCategory(category) }} >
                                 <View style={styles.button}>
-                                    <Text>
+                                    <Text style={styles.buttonText}>
                                         {category}
                                     </Text>
                                 </View></TouchableHighlight>
                         )
                     })}
+                {currentCategory ?
+                    <TouchableHighlight style={{ position: 'absolute', top: '66%', right: '50%' }} onPress={() => setCurrentCategory(null)}>
+                        <Ionicons name="arrow-back-circle-outline" size={30} color='#FFFFFF' />
+                    </TouchableHighlight> : null}
             </View>
             <View style={styles.bottom}>
                 <Text style={styles.titleWhite}>{currentGame.opponent}</Text>
@@ -225,7 +252,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 10
+        gap: 10,
+        position: 'relative'
     },
     dropdownButton: {
         borderRadius: 8,
@@ -255,7 +283,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     titleBlack: {
-        fontSize: 20,
+        fontSize: SCREEN_WIDTH < 500 ? 20 : 28,
         flexShrink: 1,
         textAlign: 'center'
     },
@@ -267,13 +295,13 @@ const styles = StyleSheet.create({
         marginVertical: 10
     },
     titleWhite: {
-        fontSize: 20,
+        fontSize: SCREEN_WIDTH < 500 ? 20 : 28,
         flexShrink: 1,
         textAlign: 'center',
         color: '#FFFFFF'
     },
     gameSet: {
-        fontSize: 14,
+        fontSize: SCREEN_WIDTH < 500 ? 14 : 20,
         flexShrink: 1,
         textAlign: 'center',
         color: '#FFFFFF'
@@ -304,17 +332,19 @@ const styles = StyleSheet.create({
         padding: 5,
         minWidth: '80%',
         borderRadius: 8,
-        fontSize: 18,
+        fontSize: SCREEN_WIDTH < 500 ? 18 : 24,
         textAlign: 'center'
     },
     modalView: {
         flex: 1,
         backgroundColor: '#2a475e',
         borderRadius: 20,
-        maxHeight: '50%',
-        maxWidth: '80%',
-        minWidth: '80%',
+        maxHeight: 300,
+        maxWidth: 400,
         alignItems: 'center',
         padding: 20
+    },
+    buttonText: {
+        fontSize: SCREEN_WIDTH < 500 ? 16 : 24
     }
 });

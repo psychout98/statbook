@@ -32,7 +32,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 3,
         backgroundColor: '#1b2838',
-        color: '#fff'
+        color: '#fff',
+        position: 'relative'
     },
     bottom: {
         backgroundColor: '#FFFFFF',

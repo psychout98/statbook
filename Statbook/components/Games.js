@@ -4,20 +4,24 @@ import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal'
 import SelectDropdown from 'react-native-select-dropdown';
+import * as SecureStore from 'expo-secure-store';
 
-
-export default function Games({ teamid, games, selectGame, addGame }) {
+export default function Games({ editor, teamid, games, selectGame, addGame }) {
 
     const [addingGame, setAddingGame] = useState(false)
     const [opponent, onChangeOpponent] = useState('')
     const [game, onChangeGame] = useState(1)
     const [set, onChangeSet] = useState(1)
 
-    function handleNewGame() {
+    async function handleNewGame() {
         if (opponent.length > 0) {
+            const token = await SecureStore.getItemAsync("token")
             axios({
                 method: "POST",
-                url: "/game",
+                url: "/app/game",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
                 params: {
                     teamid: teamid,
                     opponent: opponent,
@@ -34,17 +38,17 @@ export default function Games({ teamid, games, selectGame, addGame }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableHighlight style={{ position: 'absolute', top: -45, right: 10 }} onPress={() => setAddingGame(true)}>
+            {editor ? <TouchableHighlight style={{ position: 'absolute', top: -45, right: 10 }} onPress={() => setAddingGame(true)}>
                 <Ionicons name="add" size={40} color='#FFFFFF' />
-            </TouchableHighlight>
+            </TouchableHighlight> : null}
             {games?.length === 0 ? <Text style={styles.title}>Click + to create a game</Text> : null}
             <FlatList data={games}
                 keyExtractor={(item) => item._id}
                 renderItem={({ item }) => (
                     <View>
-                        <TouchableHighlight onPress={() => {
+                        <TouchableHighlight onPress={editor ? () => {
                             selectGame(item)
-                        }}>
+                        } : null}>
                             <View style={styles.item}>
                                 <Text style={styles.itemTitle}>{`${item.opponent} Game ${item.game} Set ${item.set}`}</Text>
                                 <Text style={styles.itemDate}>{new Date(item.date).toDateString()}</Text>
@@ -63,7 +67,7 @@ export default function Games({ teamid, games, selectGame, addGame }) {
                         <SelectDropdown data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} defaultButtonText={game} dropdownIconPosition='right'
                             renderDropdownIcon={isOpened => {
                                 return <Ionicons name={isOpened ? "chevron-up" : "chevron-down"} />
-                            }} buttonStyle={styles.dropdownButton} onSelect={(selectedItem) => onChangeGame(selectedItem)} />
+                            }} buttonStyle={styles.dropdownButton} onSelect={onChangeGame} />
                     </View>
                     <View style={styles.selector}>
                         <Text style={styles.title}>Set</Text>
@@ -114,9 +118,8 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#2a475e',
         borderRadius: 20,
-        maxHeight: '50%',
-        maxWidth: '80%',
-        minWidth: '80%',
+        maxHeight: 300,
+        maxWidth: 400,
         alignItems: 'center',
         padding: 20
     },
@@ -152,6 +155,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        marginBottom: 15,
         gap: 10
     }
 });

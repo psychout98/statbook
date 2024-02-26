@@ -7,9 +7,10 @@ import Modal from 'react-native-modal'
 import { utils, write } from 'xlsx';
 import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
+import * as SecureStore from 'expo-secure-store';
 
 
-export default function Stats({ teamname, teamData, players }) {
+export default function Stats({ teamData, players }) {
 
     const [currentStats, setCurrentStats] = useState(statCodes)
     const [openSettings, setOpenSettings] = useState(false)
@@ -18,35 +19,42 @@ export default function Stats({ teamname, teamData, players }) {
     const [totals, setTotals] = useState(null)
 
     useEffect(() => {
-        if (games.length > 0) {
-            axios({
-                method: "POST",
-                url: "/stats",
-                data: {
-                    games: games,
-                    players: players
-                }
-            }).then((result) => {
-                setRawStats(result.data)
-                if (result.data.length > 0) {
-                    const tempTotals = result.data.reduce((a, b) => {
-                        Object.keys(baseStats).forEach(stat => {
-                            a[stat] += b[stat]
-                        })
-                        return a
-                    }, { ...baseStats })
-                    setCurrentStats(buildStatList(tempTotals))
-                    tempTotals.playerid = 'Total'
-                    setTotals(tempTotals)
-                } else {
-                    setCurrentStats(buildStatList(baseStats))
-                }
-            }).catch((error) => {
-                console.log(error)
-            })
-        } else {
-            setCurrentStats(buildStatList(baseStats))
+        async function getStats() {
+            if (games.length > 0) {
+                const token = await SecureStore.getItemAsync("token")
+                axios({
+                    method: "POST",
+                    url: "/app/stats",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    data: {
+                        games: games,
+                        players: players
+                    }
+                }).then((result) => {
+                    setRawStats(result.data)
+                    if (result.data.length > 0) {
+                        const tempTotals = result.data.reduce((a, b) => {
+                            Object.keys(baseStats).forEach(stat => {
+                                a[stat] += b[stat]
+                            })
+                            return a
+                        }, { ...baseStats })
+                        setCurrentStats(buildStatList(tempTotals))
+                        tempTotals.playerid = 'Total'
+                        setTotals(tempTotals)
+                    } else {
+                        setCurrentStats(buildStatList(baseStats))
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                })
+            } else {
+                setCurrentStats(buildStatList(baseStats))
+            }
         }
+        getStats()
     }, [games, players])
 
     function buildStatList(stats) {
@@ -88,15 +96,15 @@ export default function Stats({ teamname, teamData, players }) {
             type: 'base64',
             bookType: "xlsx"
         })
-        const url = FileSystem.cacheDirectory + `${teamname} Stats.xlsx`
+        const url = FileSystem.cacheDirectory + `${teamData.teamname} Stats.xlsx`
         await FileSystem.writeAsStringAsync(url, wbout, {
             encoding: FileSystem.EncodingType.Base64
         })
         await Sharing.shareAsync(url, {
             mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            dialogTitle: `${teamname} Stats`,
+            dialogTitle: `${teamData.teamname} Stats`,
             UTI: 'com.microsoft.excel.xlsx'
-          })
+        })
     }
 
     return (

@@ -2,13 +2,21 @@ import { StyleSheet, Text, View, TouchableHighlight } from 'react-native'
 
 
 
-export default function Menubar({ teamname, setLogin, setMenuOpen, setModule, openTeamStats }) {
+export default function Menubar({ teamname, logout, setMenuOpen, setModule, openTeamStats }) {
 
     return (
         <View style={styles.modalView}>
             <View style={styles.container}>
                 <View style={styles.header}>
                     <Text style={styles.title}>{teamname}</Text>
+                </View>
+                <View style={styles.button}>
+                    <TouchableHighlight onPress={() => {
+                        setModule('Members')
+                        setMenuOpen(false)
+                    }}>
+                        <Text style={styles.text}>Team members</Text>
+                    </TouchableHighlight>
                 </View>
                 <View style={styles.button}>
                     <TouchableHighlight onPress={() => {
@@ -36,9 +44,8 @@ export default function Menubar({ teamname, setLogin, setMenuOpen, setModule, op
                 </View>
                 <View style={styles.button}>
                     <TouchableHighlight onPress={() => {
-                        setLogin(false)
+                        logout()
                         setMenuOpen(false)
-                        setModule('Games')
                     }}>
                         <Text style={styles.text}>Log out</Text>
                     </TouchableHighlight>
