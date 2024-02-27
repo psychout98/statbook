@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View, TouchableHighlight } from 'react-native'
+import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View, TouchableHighlight, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -28,7 +28,7 @@ export default function Players({ editor, teamid, players, handleNewPlayer, edit
                 method: "POST",
                 url: "/app/player",
                 headers: {
-                  Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 params: {
                     teamid: teamid,
@@ -54,7 +54,7 @@ export default function Players({ editor, teamid, players, handleNewPlayer, edit
                 method: "PUT",
                 url: "/app/player",
                 headers: {
-                  Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 params: {
                     playerid: currentPlayer._id,
@@ -78,7 +78,7 @@ export default function Players({ editor, teamid, players, handleNewPlayer, edit
                 method: "DELETE",
                 url: "/app/player",
                 headers: {
-                  Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 params: {
                     playerid: currentPlayer._id
@@ -115,36 +115,40 @@ export default function Players({ editor, teamid, players, handleNewPlayer, edit
             >
             </FlatList>
             <Modal isVisible={addingPlayer} onBackdropPress={() => setAddingPlayer(false)} backdropOpacity={0} style={{ alignItems: 'center' }}>
-                <View style={styles.modalView}>
-                    <Text style={styles.title}>Add a player</Text>
-                    <TextInput style={styles.textBox} onChangeText={onChangeName} placeholder='player name' />
-                    <TouchableHighlight onPress={handleAddPlayer}>
-                        <Text style={styles.title}>Add</Text>
-                    </TouchableHighlight>
-                </View>
-            </Modal>
-            <Modal isVisible={currentPlayer !== null} onBackdropPress={() => setCurrentPlayer(null)} backdropOpacity={0} style={{ alignItems: 'center' }}>
-                {editMenu && editor ?
-                    <View style={{ ...styles.modalView }}>
-                        <Text style={styles.title}>Edit player</Text>
-                        <TextInput style={styles.textBox} onChangeText={onChangeName} defaultValue={name} />
-                        <TouchableHighlight onPress={handleEditPlayer}>
-                            <Text style={styles.title}>Confirm changes</Text>
-                        </TouchableHighlight>
-                        <TouchableHighlight onPress={handleDeletePlayer}>
-                            <Text style={styles.delete}>{deleting ? 'Confirm delete' : 'Delete player'}</Text>
-                        </TouchableHighlight>
-                    </View> :
-                    <View style={{ ...styles.modalView, justifyContent: 'center', gap: 30 }}>
-                        <Text style={styles.title}>{currentPlayer?.name}</Text>
-                        {editor ? <TouchableHighlight onPress={() => setEditMenu(true)}>
-                            <Text style={styles.title}>Edit player</Text>
-                        </TouchableHighlight> : null}
-                        <TouchableHighlight onPress={() => selectPlayer(currentPlayer)}>
-                            <Text style={styles.title}>View stats</Text>
+                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.title}>Add a player</Text>
+                        <TextInput style={styles.textBox} onChangeText={onChangeName} placeholder='player name' />
+                        <TouchableHighlight onPress={handleAddPlayer}>
+                            <Text style={styles.title}>Add</Text>
                         </TouchableHighlight>
                     </View>
-                }
+                </TouchableWithoutFeedback>
+            </Modal>
+            <Modal isVisible={currentPlayer !== null} onBackdropPress={() => setCurrentPlayer(null)} backdropOpacity={0} style={{ alignItems: 'center' }}>
+                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                    {editMenu && editor ?
+                        <View style={{ ...styles.modalView }}>
+                            <Text style={styles.title}>Edit player</Text>
+                            <TextInput style={styles.textBox} onChangeText={onChangeName} defaultValue={name} />
+                            <TouchableHighlight onPress={handleEditPlayer}>
+                                <Text style={styles.title}>Confirm changes</Text>
+                            </TouchableHighlight>
+                            <TouchableHighlight onPress={handleDeletePlayer}>
+                                <Text style={styles.delete}>{deleting ? 'Confirm delete' : 'Delete player'}</Text>
+                            </TouchableHighlight>
+                        </View> :
+                        <View style={{ ...styles.modalView, justifyContent: 'center', gap: 30 }}>
+                            <Text style={styles.title}>{currentPlayer?.name}</Text>
+                            {editor ? <TouchableHighlight onPress={() => setEditMenu(true)}>
+                                <Text style={styles.title}>Edit player</Text>
+                            </TouchableHighlight> : null}
+                            <TouchableHighlight onPress={() => selectPlayer(currentPlayer)}>
+                                <Text style={styles.title}>View stats</Text>
+                            </TouchableHighlight>
+                        </View>
+                    }
+                </TouchableWithoutFeedback>
             </Modal>
         </SafeAreaView >
     )

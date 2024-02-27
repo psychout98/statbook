@@ -5,7 +5,7 @@ export default function Currentgame({ history }) {
     
     return (
         <SafeAreaView style={styles.container}>
-            <FlatList data={history}
+            <FlatList data={[...history].reverse()}
                 keyExtractor={(item, index) => item + index}
                 renderItem={({ item }) => (
                         <View style={styles.item}>

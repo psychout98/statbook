@@ -1,4 +1,4 @@
-import { StyleSheet, SafeAreaView, Button, View, Text, TextInput, StatusBar, TouchableHighlight } from 'react-native';
+import { StyleSheet, SafeAreaView, Button, View, Text, TextInput, StatusBar, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Modal from 'react-native-modal'
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
@@ -76,6 +76,9 @@ export default function App() {
     if (module !== '') {
       setCurrentGame(null)
     }
+    if (module !== 'Stats') {
+      setCurrentPlayer(null)
+    }
   }, [module])
 
   useEffect(() => {
@@ -88,7 +91,7 @@ export default function App() {
   function handleButton1(username, password, password2) {
     if (newAccount) {
       if (password === password2) {
-        if (/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password1)) {
+        if (/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(password1)) {
           if (/^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/.test(username)) {
             axios({
               method: "POST",
@@ -110,7 +113,7 @@ export default function App() {
             setLoginError('Invalid username (must be 8-20 characters with no special characters)')
           }
         } else {
-          setLoginError('Password must be at least eight characters with at least one letter and one number')
+          setLoginError('Password must be at least eight characters with at least one letter, one number, and one special character')
         }
       } else {
         setLoginError('Passwords must match')
@@ -361,31 +364,35 @@ export default function App() {
           <Menubar teamname={teamname} logout={logout} setMenuOpen={setMenuOpen} setModule={setModule} openTeamStats={openTeamStats} />
         </Modal>
       </SafeAreaView> :
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <SafeAreaView style={styles.screen}>
+          <View style={styles.container}>
+            <Text style={styles.title}>{newTeam ? 'Create a team' : 'Join a team'}</Text>
+            <TextInput autoCorrect={false} autoCapitalize='none' key='teamname' style={styles.textBox} onChangeText={onChangeTeamname} placeholder='team name' defaultValue={teamname} />
+            {newTeam ? null : <TextInput autoCorrect={false} autoCapitalize='none' key='invitecode' style={styles.textBox} onChangeText={onChangeJoinCode} placeholder='enter invite code' defaultValue={joinCode} />}
+            {loginError ? <Text style={{ color: "#ff0000" }}>{loginError}</Text> : null}
+            <Button onPress={handleButton3} title={newTeam ? 'Create team' : 'Join your team'} />
+            <Text style={styles.title}>or</Text>
+            <Button onPress={handleButton4} title={newTeam ? 'Join an existing team' : 'Create a new team'} />
+          </View>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    ) :
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <SafeAreaView style={styles.screen}>
         <View style={styles.container}>
-          <Text style={styles.title}>{newTeam ? 'Create a team' : 'Join a team'}</Text>
-          <TextInput autoCorrect={false} autoCapitalize='none' key='teamname' style={styles.textBox} onChangeText={onChangeTeamname} placeholder='team name' defaultValue={teamname} />
-          {newTeam ? null : <TextInput autoCorrect={false} autoCapitalize='none' key='invitecode' style={styles.textBox} onChangeText={onChangeJoinCode} placeholder='enter invite code' defaultValue={joinCode} />}
+          <Text style={styles.title}>Volleyball Stat Tracker</Text>
+          <TextInput autoCorrect={false} autoCapitalize='none' key='username' style={styles.textBox} onChangeText={onChangeUsername} placeholder='username' defaultValue={username} />
+          <TextInput autoCorrect={false} autoCapitalize='none' key='password1' secureTextEntry={true} style={styles.textBox} onChangeText={onChangePassword1} placeholder='password' defaultValue={password1} />
+          {newAccount ? <TextInput autoCorrect={false} autoCapitalize='none' key='password2' secureTextEntry={true} style={styles.textBox} onChangeText={onChangePassword2} placeholder='confirm password' /> : null}
           {loginError ? <Text style={{ color: "#ff0000" }}>{loginError}</Text> : null}
-          <Button onPress={handleButton3} title={newTeam ? 'Create team' : 'Join your team'} />
+          <Button onPress={() => handleButton1(username, password1, password2)} title={newAccount ? 'Create account' : 'Log in'} />
           <Text style={styles.title}>or</Text>
-          <Button onPress={handleButton4} title={newTeam ? 'Join an existing team' : 'Create a new team'} />
+          <Button onPress={handleButton2} title={newAccount ? 'Go back' : 'Create an account'} />
         </View>
       </SafeAreaView>
-    ) :
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Volleyball Stat Tracker</Text>
-        <TextInput autoCorrect={false} autoCapitalize='none' key='username' style={styles.textBox} onChangeText={onChangeUsername} placeholder='username' defaultValue={username} />
-        <TextInput autoCorrect={false} autoCapitalize='none' key='password1' secureTextEntry={true} style={styles.textBox} onChangeText={onChangePassword1} placeholder='password' defaultValue={password1} />
-        {newAccount ? <TextInput autoCorrect={false} autoCapitalize='none' key='password2' secureTextEntry={true} style={styles.textBox} onChangeText={onChangePassword2} placeholder='confirm password' /> : null}
-        {loginError ? <Text style={{ color: "#ff0000" }}>{loginError}</Text> : null}
-        <Button onPress={() => handleButton1(username, password1, password2)} title={newAccount ? 'Create account' : 'Log in'} />
-        <Text style={styles.title}>or</Text>
-        <Button onPress={handleButton2} title={newAccount ? 'Go back' : 'Create an account'} />
-      </View>
-    </SafeAreaView>
-  );
+    </TouchableWithoutFeedback>
+  )
 }
 
 const styles = StyleSheet.create({

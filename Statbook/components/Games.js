@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View, TouchableHighlight } from 'react-native'
+import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, View, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useState } from 'react'
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -20,7 +20,7 @@ export default function Games({ editor, teamid, games, selectGame, addGame }) {
                 method: "POST",
                 url: "/app/game",
                 headers: {
-                  Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 params: {
                     teamid: teamid,
@@ -59,27 +59,29 @@ export default function Games({ editor, teamid, games, selectGame, addGame }) {
             >
             </FlatList>
             <Modal isVisible={addingGame} onBackdropPress={() => setAddingGame(false)} backdropOpacity={0} style={{ alignItems: 'center' }}>
-                <View style={styles.modalView}>
-                    <Text style={styles.title}>Create a game</Text>
-                    <TextInput style={styles.textBox} onChangeText={onChangeOpponent} placeholder='opponent name' />
-                    <View style={styles.selector}>
-                        <Text style={styles.title}>Game</Text>
-                        <SelectDropdown data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} defaultButtonText={game} dropdownIconPosition='right'
-                            renderDropdownIcon={isOpened => {
-                                return <Ionicons name={isOpened ? "chevron-up" : "chevron-down"} />
-                            }} buttonStyle={styles.dropdownButton} onSelect={onChangeGame} />
+                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.title}>Create a game</Text>
+                        <TextInput style={styles.textBox} onChangeText={onChangeOpponent} placeholder='opponent name' />
+                        <View style={styles.selector}>
+                            <Text style={styles.title}>Game</Text>
+                            <SelectDropdown data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} defaultButtonText={game} dropdownIconPosition='right'
+                                renderDropdownIcon={isOpened => {
+                                    return <Ionicons name={isOpened ? "chevron-up" : "chevron-down"} />
+                                }} buttonStyle={styles.dropdownButton} onSelect={onChangeGame} />
+                        </View>
+                        <View style={styles.selector}>
+                            <Text style={styles.title}>Set</Text>
+                            <SelectDropdown data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} defaultButtonText={set} dropdownIconPosition='right'
+                                renderDropdownIcon={isOpened => {
+                                    return <Ionicons name={isOpened ? "chevron-up" : "chevron-down"} />
+                                }} buttonStyle={styles.dropdownButton} onSelect={(selectedItem) => onChangeSet(selectedItem)} />
+                        </View>
+                        <TouchableHighlight onPress={handleNewGame}>
+                            <Text style={styles.title}>Create game</Text>
+                        </TouchableHighlight>
                     </View>
-                    <View style={styles.selector}>
-                        <Text style={styles.title}>Set</Text>
-                        <SelectDropdown data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} defaultButtonText={set} dropdownIconPosition='right'
-                            renderDropdownIcon={isOpened => {
-                                return <Ionicons name={isOpened ? "chevron-up" : "chevron-down"} />
-                            }} buttonStyle={styles.dropdownButton} onSelect={(selectedItem) => onChangeSet(selectedItem)} />
-                    </View>
-                    <TouchableHighlight onPress={handleNewGame}>
-                        <Text style={styles.title}>Create game</Text>
-                    </TouchableHighlight>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
         </SafeAreaView>
     )
